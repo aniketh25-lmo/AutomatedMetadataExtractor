@@ -13,6 +13,12 @@ logger = setup_logger("scholar_scraper")
 
 
 def run_scholar_scraper(faculty_name: str, output_dir: str):
+    """
+    Scrapes Google Scholar profile.
+
+    Excel → ONLY publications table (clean & presentable)
+    DB payload → full profile + metrics + papers
+    """
 
     driver = get_driver()
     wait = WebDriverWait(driver, 30)
@@ -21,7 +27,7 @@ def run_scholar_scraper(faculty_name: str, output_dir: str):
         logger.info(f"Starting Scholar scrape for: {faculty_name}")
 
         # =====================================================
-        # STEP 1: GOOGLE SEARCH
+        # STEP 1: GOOGLE SEARCH (ROBUST ENTRY)
         # =====================================================
         driver.get("https://www.google.com")
 
@@ -33,18 +39,13 @@ def run_scholar_scraper(faculty_name: str, output_dir: str):
         search_box.submit()
 
         logger.info("Google search submitted")
-
-        # 🔴 WAIT FOR CAPTCHA / PAGE LOAD
-        logger.info("Waiting 30 seconds for CAPTCHA solving if needed...")
+        logger.info("Waiting 30 seconds for CAPTCHA/manual solve...")
         time.sleep(30)
 
         # =====================================================
         # STEP 2: FIND SCHOLAR PROFILE LINK
         # =====================================================
-        logger.info("Locating Scholar profile link...")
-
         profile_url = None
-
         links = driver.find_elements(By.CSS_SELECTOR, "a")
 
         for link in links:
@@ -58,31 +59,57 @@ def run_scholar_scraper(faculty_name: str, output_dir: str):
 
         logger.info(f"Profile found: {profile_url}")
         driver.get(profile_url)
-
-        time.sleep(20)
+        time.sleep(5)
 
         # =====================================================
-        # STEP 3: PROFILE METRICS
+        # STEP 3: PROFILE METADATA (FOR DB)
         # =====================================================
-        profile_stats = {}
+        profile = {}
 
         try:
-            stats = driver.find_elements(By.CSS_SELECTOR, "td.gsc_rsb_std")
-
-            labels = [
-                "Total Citations",
-                "Citations Since 2019",
-                "h-index",
-                "h-index Since 2019",
-                "i10-index",
-                "i10-index Since 2019"
-            ]
-
-            for label, stat in zip(labels, stats):
-                profile_stats[label] = stat.text
-
+            profile["name"] = driver.find_element(By.ID, "gsc_prf_in").text
         except:
-            logger.warning("Could not extract profile metrics")
+            profile["name"] = faculty_name
+
+        try:
+            profile["affiliation"] = driver.find_element(
+                By.CLASS_NAME, "gsc_prf_il"
+            ).text
+        except:
+            profile["affiliation"] = ""
+
+        try:
+            profile["email"] = driver.find_element(
+                By.ID, "gsc_prf_ivh"
+            ).text
+        except:
+            profile["email"] = ""
+
+        try:
+            profile["interests"] = ", ".join(
+                [i.text for i in driver.find_elements(By.CLASS_NAME, "gsc_prf_inta")]
+            )
+        except:
+            profile["interests"] = ""
+
+        try:
+            profile["photo_url"] = driver.find_element(
+                By.ID, "gsc_prf_pup-img"
+            ).get_attribute("src")
+        except:
+            profile["photo_url"] = ""
+
+        # Metrics
+        try:
+            stats = driver.find_elements(By.CSS_SELECTOR, "td.gsc_rsb_std")
+            profile["citations_all"] = stats[0].text
+            profile["citations_recent"] = stats[1].text
+            profile["hindex_all"] = stats[2].text
+            profile["hindex_recent"] = stats[3].text
+            profile["i10_all"] = stats[4].text
+            profile["i10_recent"] = stats[5].text
+        except:
+            logger.warning("Metrics extraction failed")
 
         # =====================================================
         # STEP 4: LOAD ALL PUBLICATIONS
@@ -92,60 +119,80 @@ def run_scholar_scraper(faculty_name: str, output_dir: str):
         while True:
             try:
                 more_btn = driver.find_element(By.ID, "gsc_bpf_more")
-
                 if more_btn.is_enabled():
-                    more_btn.click()
+                    driver.execute_script("arguments[0].click();", more_btn)
                     time.sleep(1.5)
                 else:
                     break
-
             except:
                 break
 
         # =====================================================
-        # STEP 5: SCRAPE ALL PAPERS
+        # STEP 5: SCRAPE PUBLICATIONS
         # =====================================================
-        logger.info("Scraping publication table...")
+        logger.info("Scraping publications table...")
 
-        papers = []
+        excel_rows = []   # clean Excel
+        db_papers = []    # full DB payload
 
         rows = driver.find_elements(By.CSS_SELECTOR, "tr.gsc_a_tr")
 
         for row in rows:
             try:
-                title = row.find_element(By.CLASS_NAME, "gsc_a_at").text
-                authors = row.find_elements(By.CLASS_NAME, "gs_gray")[0].text
-                venue = row.find_elements(By.CLASS_NAME, "gs_gray")[1].text
+                title_el = row.find_element(By.CLASS_NAME, "gsc_a_at")
+                title = title_el.text
+                paper_url = title_el.get_attribute("href")
+
+                gray = row.find_elements(By.CLASS_NAME, "gs_gray")
+                authors = gray[0].text if len(gray) > 0 else ""
+                venue = gray[1].text if len(gray) > 1 else ""
+
                 citations = row.find_element(By.CLASS_NAME, "gsc_a_c").text
                 year = row.find_element(By.CLASS_NAME, "gsc_a_y").text
 
-                papers.append({
-                    "Faculty Name": faculty_name,
+                # ---------- Excel row ----------
+                excel_rows.append({
                     "Title": title,
                     "Authors": authors,
                     "Venue": venue,
                     "Citations": citations,
-                    "Year": year,
-                    **profile_stats
+                    "Year": year
+                })
+
+                # ---------- DB payload ----------
+                db_papers.append({
+                    "title": title,
+                    "authors": authors,
+                    "venue": venue,
+                    "citations": citations,
+                    "year": year,
+                    "scholar_url": paper_url
                 })
 
             except Exception as e:
-                logger.error(f"Row parse error: {e}")
+                logger.warning(f"Row parse error: {e}")
 
         # =====================================================
-        # STEP 6: SAVE EXCEL
+        # STEP 6: SAVE CLEAN EXCEL
         # =====================================================
-        logger.info("Saving Excel output...")
-
-        df = pd.DataFrame(papers)
+        df = pd.DataFrame(excel_rows)
 
         filename = f"{faculty_name.replace(' ', '_')}_Scholar.xlsx"
         output_path = os.path.join(output_dir, filename)
 
         df.to_excel(output_path, index=False)
 
-        logger.info(f"Saved successfully: {output_path}")
-        return output_path
+        logger.info(f"Excel saved: {output_path}")
+
+        # =====================================================
+        # STEP 7: RETURN DB PAYLOAD
+        # =====================================================
+        db_payload = {
+            "profile": profile,
+            "papers": db_papers
+        }
+
+        return output_path, db_payload
 
     finally:
         driver.quit()

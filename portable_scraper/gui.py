@@ -221,9 +221,11 @@ class ModernGUI:
         self.log("Starting Google Scholar scraping...")
 
         try:
-            file = run_scholar_scraper(name, self.output_directory)
-            self.log(f"Scholar scraping completed: {file}")
+            excel_path, payload = run_scholar_scraper(name, self.output_directory)
+
+            self.log(f"Scholar scraping completed: {excel_path}")
             messagebox.showinfo("Success", "Google Scholar scraping completed!")
+
         except Exception as e:
             self.log(f"Scholar Error: {e}")
             messagebox.showerror("Error", str(e))
