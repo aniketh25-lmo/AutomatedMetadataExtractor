@@ -1,22 +1,23 @@
 from supabase import create_client
-from portable_scraper.core.config import load_config
+from portable_scraper.core.supabase_client import supabase
+from portable_scraper.core.publication_master import upsert_publication
 
-config = load_config()
-
-supabase = create_client(
-    config["supabase_url"],
-    config["supabase_key"]  # service_role
-)
 
 
 #-----------type caster ----------
+import re
+
 def to_int(value):
     if value is None:
         return None
-    try:
-        return int(str(value).strip())
-    except:
+
+    s = str(value)
+    s = re.sub(r"[^\d]", "", s)  # keep digits only
+
+    if s == "":
         return None
+
+    return int(s)
 
 
 # ---------- SCOPUS ----------
@@ -45,6 +46,7 @@ def insert_scopus_payload(payload: dict):
         }
 
         supabase.table("scopus_papers").insert(paper_clean).execute()
+        upsert_publication(p, source="scopus", faculty_name=profile_clean["name"])
 
 
 
@@ -80,4 +82,5 @@ def insert_scholar_payload(payload: dict):
         }
 
         supabase.table("scholar_papers").insert(paper_clean).execute()
+        upsert_publication(p, source="scholar", faculty_name=profile_clean["name"])
 
