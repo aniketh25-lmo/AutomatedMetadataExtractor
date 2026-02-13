@@ -29,3 +29,12 @@
 2026-02-13 12:03:18,309 - INFO - Documents tab opened
 2026-02-13 12:03:24,262 - INFO - Scraped 10 documents
 2026-02-13 12:03:24,336 - INFO - Excel saved: C:/Users/Devil's Nest/OneDrive/Documents/VNR VJIET/YEAR-4/Major Project/Output\Scopus_Baby_Vadlana_documents.xlsx
+2026-02-13 22:26:37,340 - INFO - Starting Scopus scraping
+2026-02-13 22:26:49,796 - INFO - Waiting 30s for manual login
+2026-02-13 22:27:33,461 - INFO - Author search submitted
+2026-02-13 22:27:44,691 - INFO - Author profile opened
+2026-02-13 22:27:51,874 - INFO - Edit profile clicked
+2026-02-13 22:27:51,874 - INFO - Waiting 10s for popup/manual handling
+2026-02-13 22:28:37,508 - INFO - Documents tab opened
+2026-02-13 22:28:43,860 - INFO - Scraped 10 documents
+2026-02-13 22:28:44,107 - INFO - Excel saved: C:/Users/Devil's Nest/OneDrive/Documents/VNR VJIET/YEAR-4/Major Project/Output\Scopus_Baby_Vadlana_documents.xlsx

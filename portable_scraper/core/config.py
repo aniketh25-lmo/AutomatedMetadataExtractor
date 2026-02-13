@@ -1,7 +1,13 @@
 import json
 import os
 
-CONFIG_FILE = "scraper_config.json"
+# Path to this file's directory
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+CONFIG_FILE = os.path.join(BASE_DIR, "config.json")
+
+#print("CONFIG PATH:", CONFIG_FILE)
+
 
 DEFAULT_CONFIG = {
     "login_wait_time": 30,
@@ -9,7 +15,6 @@ DEFAULT_CONFIG = {
     "output_folder": "outputs",
     "headless": False
 }
-
 
 def load_config():
     if not os.path.exists(CONFIG_FILE):

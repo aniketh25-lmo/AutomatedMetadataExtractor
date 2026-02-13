@@ -1,5 +1,10 @@
 {
+  "login_wait_time": 30,
+  "page_load_wait": 10,
+  "output_folder": "outputs",
   "headless": false,
-  "supabase_url": "https://yjwxkfhqefdeuzeluihr.supabase.co",
-  "supabase_key": "sb_publishable_hgMObDjuemnGNEgl3nt9Tg_F7X6-G-N"
+
+ "supabase_url": "https://yjwxkfhqefdeuzeluihr.supabase.co",
+ "supabase_key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlqd3hrZmhxZWZkZXV6ZWx1aWhyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDk2MzkyMSwiZXhwIjoyMDg2NTM5OTIxfQ.DzMR2q_osX130OWE63kWMfGM3UAFnVJB89aL78xjvgo",
+ "supabase_anon_key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlqd3hrZmhxZWZkZXV6ZWx1aWhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5NjM5MjEsImV4cCI6MjA4NjUzOTkyMX0.s-cV9ZvdbTrjuY4VQqR5dIzVfHl670nJ1-Zirxs7vRM"
 }

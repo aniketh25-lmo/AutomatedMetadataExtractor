@@ -4,6 +4,8 @@ import threading
 
 from portable_scraper.modules.scholar_scraper import run_scholar_scraper
 from portable_scraper.modules.scopus_scraper import run_scopus_scraper
+from portable_scraper.core.db import insert_scholar_payload, insert_scopus_payload
+
 
 
 class ModernGUI:
@@ -222,6 +224,10 @@ class ModernGUI:
 
         try:
             excel_path, payload = run_scholar_scraper(name, self.output_directory)
+            # DB INSERT
+            insert_scholar_payload(payload)
+            self.log("Scholar data inserted into DB")
+
 
             self.log(f"Scholar scraping completed: {excel_path}")
             messagebox.showinfo("Success", "Google Scholar scraping completed!")
@@ -248,7 +254,12 @@ class ModernGUI:
         self.log("Starting Scopus scraping...")
 
         try:
-            file_path, _ = run_scopus_scraper(first, last, self.output_directory)
+            file_path, payload = run_scopus_scraper(first, last, self.output_directory)
+
+            # DB INSERT
+            insert_scopus_payload(payload)
+            self.log("Scopus data inserted into DB")
+
             self.log(f"Scopus scraping completed: {file_path}")
 
             messagebox.showinfo("Success", "Scopus scraping completed!")
