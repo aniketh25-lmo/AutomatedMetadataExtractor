@@ -1,0 +1,15 @@
+setup.py
+portable_scraper/__init__.py
+portable_scraper/gui.py
+portable_scraper/testsimport.py
+portable_scraper.egg-info/PKG-INFO
+portable_scraper.egg-info/SOURCES.txt
+portable_scraper.egg-info/dependency_links.txt
+portable_scraper.egg-info/top_level.txt
+portable_scraper/core/__init__.py
+portable_scraper/core/config.py
+portable_scraper/core/driver_manager.py
+portable_scraper/core/logger.py
+portable_scraper/modules/__init__.py
+portable_scraper/modules/scholar_scraper.py
+portable_scraper/modules/scopus_scraper.py

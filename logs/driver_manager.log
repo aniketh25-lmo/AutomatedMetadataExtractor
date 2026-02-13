@@ -1,0 +1,57 @@
+2026-02-11 13:17:53,858 - INFO - Initializing Chrome Driver
+2026-02-11 13:17:53,858 - INFO - Attempting to download matching ChromeDriver
+2026-02-11 13:17:58,336 - INFO - Initializing Chrome Driver
+2026-02-11 13:17:58,336 - INFO - Attempting to download matching ChromeDriver
+2026-02-11 13:17:58,816 - INFO - ChromeDriver initialized successfully
+2026-02-11 13:18:02,133 - INFO - ChromeDriver initialized successfully
+2026-02-11 13:30:03,360 - INFO - Initializing Chrome Driver
+2026-02-11 13:30:03,361 - INFO - Attempting to download matching ChromeDriver
+2026-02-11 13:30:05,053 - INFO - ChromeDriver initialized successfully
+2026-02-11 22:54:35,563 - INFO - Initializing Chrome Driver
+2026-02-11 22:54:35,565 - INFO - Attempting to download matching ChromeDriver
+2026-02-11 22:54:47,805 - INFO - ChromeDriver initialized successfully
+2026-02-11 22:55:09,041 - INFO - Initializing Chrome Driver
+2026-02-11 22:55:09,042 - INFO - Attempting to download matching ChromeDriver
+2026-02-11 22:55:11,340 - INFO - ChromeDriver initialized successfully
+2026-02-11 23:01:16,115 - INFO - Initializing Chrome Driver
+2026-02-11 23:01:16,115 - INFO - Attempting to download matching ChromeDriver
+2026-02-11 23:01:17,881 - INFO - ChromeDriver initialized successfully
+2026-02-11 23:16:09,323 - INFO - Initializing Chrome Driver
+2026-02-11 23:16:09,323 - INFO - Attempting to download matching ChromeDriver
+2026-02-11 23:16:11,065 - INFO - ChromeDriver initialized successfully
+2026-02-11 23:17:44,708 - INFO - Initializing Chrome Driver
+2026-02-11 23:17:44,708 - INFO - Attempting to download matching ChromeDriver
+2026-02-11 23:17:46,316 - INFO - ChromeDriver initialized successfully
+2026-02-11 23:27:08,064 - INFO - Initializing Chrome Driver
+2026-02-11 23:27:08,065 - INFO - Attempting to download matching ChromeDriver
+2026-02-11 23:27:10,115 - INFO - ChromeDriver initialized successfully
+2026-02-11 23:34:07,453 - INFO - Initializing Chrome Driver
+2026-02-11 23:34:07,453 - INFO - Attempting to download matching ChromeDriver
+2026-02-11 23:34:09,141 - INFO - ChromeDriver initialized successfully
+2026-02-11 23:42:31,113 - INFO - Initializing Chrome Driver
+2026-02-11 23:42:31,114 - INFO - Attempting to download matching ChromeDriver
+2026-02-11 23:42:32,804 - INFO - ChromeDriver initialized successfully
+2026-02-12 00:16:13,853 - INFO - Initializing Chrome Driver
+2026-02-12 00:16:13,853 - INFO - Attempting to download matching ChromeDriver
+2026-02-12 00:16:17,247 - INFO - ChromeDriver initialized successfully
+2026-02-12 00:18:08,580 - INFO - Initializing Chrome Driver
+2026-02-12 00:18:08,580 - INFO - Attempting to download matching ChromeDriver
+2026-02-12 00:18:10,609 - INFO - ChromeDriver initialized successfully
+2026-02-12 00:29:22,586 - INFO - Initializing Chrome Driver
+2026-02-12 00:29:22,586 - INFO - Attempting to download matching ChromeDriver
+2026-02-12 00:29:24,173 - INFO - ChromeDriver initialized successfully
+2026-02-12 00:36:34,126 - INFO - Initializing Chrome Driver
+2026-02-12 00:36:34,127 - INFO - Attempting to download matching ChromeDriver
+2026-02-12 00:36:36,197 - INFO - ChromeDriver initialized successfully
+2026-02-12 14:59:10,829 - INFO - Initializing WebDriver
+2026-02-12 14:59:10,830 - INFO - Attempting automatic ChromeDriver setup
+2026-02-12 14:59:21,662 - INFO - ChromeDriver initialized via WebDriver Manager
+2026-02-12 14:59:40,605 - INFO - Initializing WebDriver
+2026-02-12 14:59:40,605 - INFO - Attempting automatic ChromeDriver setup
+2026-02-12 14:59:48,934 - INFO - ChromeDriver initialized via WebDriver Manager
+2026-02-12 15:05:51,093 - INFO - Initializing WebDriver
+2026-02-12 15:05:51,093 - INFO - Attempting automatic ChromeDriver setup
+2026-02-12 15:05:56,860 - INFO - ChromeDriver initialized via WebDriver Manager
+2026-02-12 15:07:33,251 - INFO - Initializing WebDriver
+2026-02-12 15:07:33,251 - INFO - Attempting automatic ChromeDriver setup
+2026-02-12 15:07:36,806 - INFO - ChromeDriver initialized via WebDriver Manager
