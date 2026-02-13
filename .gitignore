@@ -1,2 +1,20 @@
 core/config.py
 test_supabase.py
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# binaries
+*.exe
+*.pkg
+*.pyz
+*.zip
+
+# python cache
+__pycache__/
+*.pyc
+
+# logs
+logs/
