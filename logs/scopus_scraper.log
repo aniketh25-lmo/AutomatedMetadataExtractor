@@ -2,3 +2,30 @@
 2026-02-11 22:56:47,462 - INFO - Scopus scraping completed successfully
 2026-02-11 23:01:22,068 - INFO - Waiting for manual login
 2026-02-11 23:02:52,068 - INFO - Scopus scraping completed successfully
+2026-02-13 11:26:05,507 - INFO - Starting Scopus scraping
+2026-02-13 11:26:14,975 - INFO - Waiting 30s for manual login
+2026-02-13 11:26:54,654 - INFO - Author search submitted
+2026-02-13 11:27:05,093 - INFO - Author profile opened
+2026-02-13 11:27:11,825 - INFO - Edit profile clicked
+2026-02-13 11:27:11,826 - INFO - Waiting 10s for popup/manual handling
+2026-02-13 11:27:57,395 - INFO - Documents tab opened
+2026-02-13 11:28:02,505 - INFO - Profile: {'name': '', 'orcid': 'Go to ORCID profile', 'affiliation': '', 'documents': 'Author details', 'citations': '', 'h_index': ''}
+2026-02-13 11:28:02,954 - INFO - Scraped 10 documents
+2026-02-13 11:28:03,364 - INFO - Excel saved: C:/Users/Devil's Nest/OneDrive/Documents/VNR VJIET/YEAR-4/Major Project/Output\Scopus_Baby_Vadlana_documents.xlsx
+2026-02-13 11:58:50,551 - INFO - Starting Scopus scraping
+2026-02-13 11:58:57,832 - INFO - Waiting 30s for manual login
+2026-02-13 11:59:36,081 - INFO - Author search submitted
+2026-02-13 11:59:45,874 - INFO - Author profile opened
+2026-02-13 11:59:55,019 - INFO - Edit profile clicked
+2026-02-13 11:59:55,020 - INFO - Waiting 10s for popup/manual handling
+2026-02-13 12:00:40,646 - INFO - Documents tab opened
+2026-02-13 12:00:46,857 - INFO - Scraped 10 documents
+2026-02-13 12:01:29,751 - INFO - Starting Scopus scraping
+2026-02-13 12:01:35,410 - INFO - Waiting 30s for manual login
+2026-02-13 12:02:15,957 - INFO - Author search submitted
+2026-02-13 12:02:25,684 - INFO - Author profile opened
+2026-02-13 12:02:32,780 - INFO - Edit profile clicked
+2026-02-13 12:02:32,780 - INFO - Waiting 10s for popup/manual handling
+2026-02-13 12:03:18,309 - INFO - Documents tab opened
+2026-02-13 12:03:24,262 - INFO - Scraped 10 documents
+2026-02-13 12:03:24,336 - INFO - Excel saved: C:/Users/Devil's Nest/OneDrive/Documents/VNR VJIET/YEAR-4/Major Project/Output\Scopus_Baby_Vadlana_documents.xlsx

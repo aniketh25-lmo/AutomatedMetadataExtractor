@@ -248,8 +248,9 @@ class ModernGUI:
         self.log("Starting Scopus scraping...")
 
         try:
-            file = run_scopus_scraper(first, last, self.output_directory)
-            self.log(f"Scopus scraping completed: {file}")
+            file_path, _ = run_scopus_scraper(first, last, self.output_directory)
+            self.log(f"Scopus scraping completed: {file_path}")
+
             messagebox.showinfo("Success", "Scopus scraping completed!")
         except Exception as e:
             self.log(f"Scopus Error: {e}")
