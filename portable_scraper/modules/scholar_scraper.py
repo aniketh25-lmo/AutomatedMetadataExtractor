@@ -59,7 +59,7 @@ def run_scholar_scraper(faculty_name: str, output_dir: str):
 
         logger.info(f"Profile found: {profile_url}")
         driver.get(profile_url)
-        time.sleep(5)
+        time.sleep(20)
 
         # =====================================================
         # STEP 3: PROFILE METADATA (FOR DB)
