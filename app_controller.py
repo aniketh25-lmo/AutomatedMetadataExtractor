@@ -8,6 +8,7 @@ from datetime import datetime
 from tkinter import messagebox  # 🟢 THE FIX
 import traceback
 from portable_scraper.core.config import app_config
+import time
 
 
 # --- ADD THIS CLASS AT THE TOP ---
