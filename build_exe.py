@@ -11,7 +11,7 @@ PyInstaller.__main__.run([
     
     "--name=AcademicPulsePro",
     "--onefile",
-    "--windowed", # Prevents a black console window from popping up behind your GUI
+    "--console", # Prevents a black console window from popping up behind your GUI
     "--clean",
 
     # Core Logic & UI Hidden Imports

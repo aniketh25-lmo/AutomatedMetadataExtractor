@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from types import SimpleNamespace
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -22,8 +23,15 @@ def load_config():
     with open(CONFIG_FILE, "r") as f:
         config_dict = json.load(f)
     
+    # Use this to find the real directory of the .exe
+    if getattr(sys, 'frozen', False):
+        application_path = os.path.dirname(sys.executable)
+    else:
+        application_path = os.path.dirname(os.path.abspath(__file__))
+
+    # Ensure the output folder is tied to the exe location, not the temp folder
+    output_path = os.path.join(application_path, "outputs")
     # Ensures folder exists relative to project root
-    output_path = os.path.join(BASE_DIR, "..", "..", config_dict.get("output_folder", "outputs"))
     os.makedirs(output_path, exist_ok=True)
     
     return SimpleNamespace(**config_dict)

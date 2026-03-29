@@ -92,6 +92,9 @@ class MasterpieceView(ctk.CTk):
         self.status_lbl = ctk.CTkLabel(self.status_pill, text="SUPABASE ACTIVE", font=self.font_label, text_color=T_SUBTEXT)
         self.status_lbl.pack(side="left")
 
+        # 🟢 Institutional Info (VNR VJIET Branding)
+ 
+
     def create_nav(self, text, icon, row):
         btn = ctk.CTkButton(self.sidebar, text=f"  {icon}   {text}", anchor="w", font=self.font_nav, 
                             height=60, fg_color="transparent", text_color=T_TEXT, 
@@ -106,9 +109,13 @@ class MasterpieceView(ctk.CTk):
             self.sidebar.configure(width=90); self.logo_text.pack_forget(); self.status_lbl.pack_forget()
             for b in self.nav_btns: b.configure(text=f" {b.icon}")
             self.sidebar_collapsed = True
+            self.btn_info.configure(text=" ⓘ") # Shrink to icon
+            self.sidebar_collapsed = True
         else:
             self.sidebar.configure(width=280); self.logo_text.pack(side="left", padx=10); self.status_lbl.pack(side="left")
             for b in self.nav_btns: b.configure(text=b.full_text)
+            self.sidebar_collapsed = False
+            self.btn_info.configure(text=" ⓘ   System Info") # Expand to text
             self.sidebar_collapsed = False
 
     def _build_main_viewport(self):
@@ -160,6 +167,37 @@ class MasterpieceView(ctk.CTk):
             f.pack(side="left", expand=True)
             ctk.CTkLabel(f, text=lbl, font=self.font_label, text_color=T_ACCENT).pack()
             ctk.CTkLabel(f, textvariable=var, font=self.font_body, text_color=T_TEXT).pack()
+        
+        # 🟢 Explorer Hub: Quick Access to Scraped Data
+        # 🟢 EXPLORER HUB: High-Contrast Sidebar Matching
+        actions = ctk.CTkFrame(self.canvas, fg_color="transparent")
+        actions.pack(fill="x", pady=(15, 5))
+
+        # Shared styling for both buttons
+        btn_props = {
+            "fg_color": T_CARD,
+            "border_width": 1,
+            "border_color": T_BORDER,
+            "text_color": T_TEXT,
+            "hover_color": T_ACCENT,
+            "height": 55, # Premium Height
+            "font": ctk.CTkFont(family="Inter", size=13, weight="bold")
+        }
+
+# 🟢 THE FIX: Use winfo_toplevel() to find the Controller
+        self.btn_outputs = ctk.CTkButton(
+            actions, text="📁   VIEW OUTPUTS", 
+            command=lambda: self.winfo_toplevel().open_outputs(), # ⬅️ Updated
+            **btn_props
+        )
+        self.btn_outputs.pack(side="left", padx=(0, 10), expand=True, fill="x")
+
+        self.btn_logs = ctk.CTkButton(
+            actions, text="📄   VIEW LOGS", 
+            command=lambda: self.winfo_toplevel().open_logs(), # ⬅️ Updated
+            **btn_props
+        )
+        self.btn_logs.pack(side="left", expand=True, fill="x")
     # --- VIEW RENDERERS (REPLACING THE ENDLESS TO-AND-FRO) ---
     def clear_canvas(self):
         for w in self.canvas.winfo_children(): w.destroy()

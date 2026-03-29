@@ -12,6 +12,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
+from portable_scraper.core.logger import setup_logger
+logger = setup_logger("FacultyScraper")
 
 # ==========================================
 # 1. HELPER FUNCTIONS & SHIELDS
@@ -459,8 +461,10 @@ def attach_and_scrape_wos(debug_port, chrome_process, output_dir: str):
             return None, None
 
     except Exception as general_error:
-        print(f"\n❌ A fatal error interrupted the scraper: {general_error}")
+        logger.error(f"Internal WoS Scraper Error: {str(e)}", exc_info=True)
         return None, None
+        # print(f"\n❌ A fatal error interrupted the scraper: {general_error}")
+        # return None, None
 
     finally:
         print("\n🧹 Initiating system cleanup...")

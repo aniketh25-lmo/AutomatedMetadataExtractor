@@ -8,6 +8,8 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from portable_scraper.core.logger import setup_logger
+logger = setup_logger("FacultyScraper") #
 
 # ==========================================
 # 1. CONFIGURATION & TIMEOUTS
@@ -194,27 +196,30 @@ def run_scholar_scraper(first_name, last_name, affiliation="", output_dir=""):
 
         print(f"   ✅ Extraction Complete. Processed {len(papers)} papers.")
 
-        # --- PHASE 5: EXCEL SAVE & PAYLOAD PACKAGING ---
-        print("\n💾 PHASE 5: Generating Excel and Preparing DB Payload...")
-        safe_name = re.sub(r'[^\w\s-]', '', profile["Name"]).strip().replace(' ', '_')
-        filename = f"Scholar_{safe_name}_Exhaustive.xlsx"
-        output_path = os.path.join(output_dir, filename)
-        
-        # Save Excel
-        pd.DataFrame(papers).to_excel(output_path, index=False)
-        print(f"   ✅ Local Excel generated: {output_path}")
-        
-        # Return structure for the 7-stage sequential pipeline
-        db_payload = {
-            "profile": profile,
-            "papers": papers
-        }
-        
-        print("   ✅ Payload packaged for pipeline routing.")
-        return output_path, db_payload
+        # 🟢 PHASE 5: Generating Dual Excels & Preparing Payload
+        print("💾 PHASE 5: Generating Excel Backups...")
+        if papers:
+            os.makedirs(output_dir, exist_ok=True)
+            # Standardized naming for Scholar
+            clean_name = f"{last_name}_{first_name[0]}" # Matches Scholar_V_Baby style
+            
+            profile_path = os.path.join(output_dir, f"Scholar_{clean_name}_Profile.xlsx")
+            papers_path = os.path.join(output_dir, f"Scholar_{clean_name}_Exhaustive.xlsx")
+            
+            # Save both for a full local audit trail
+            pd.DataFrame([profile]).to_excel(profile_path, index=False)
+            pd.DataFrame(papers).to_excel(papers_path, index=False)
+            
+            print(f"   📊 Saved Profile to: {profile_path}")
+            print(f"   📊 Saved Publications to: {papers_path}")
+            
+            payload = {"profile": profile, "papers": papers}
+            return papers_path, payload
+
 
     except Exception as outer_e:
         print(f"❌ CRITICAL SCRAPER ERROR: {outer_e}")
+        logger.error(f"❌ CRITICAL SCRAPER ERROR: {str(outer_e)}", exc_info=True)
         return None, None
 
     finally:

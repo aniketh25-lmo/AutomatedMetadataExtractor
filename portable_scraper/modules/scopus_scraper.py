@@ -13,6 +13,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
+from portable_scraper.core.logger import setup_logger
+logger = setup_logger("FacultyScraper") #
 
 # ==========================================
 # 1. GLOBAL CONFIGURATION
@@ -80,6 +82,7 @@ def save_to_excel_with_retry(df, filepath):
         print("   👉 ACTION REQUIRED: Close the file in Excel before the next sync.")
     except Exception as e:
         print(f"\n❌ Unexpected error while saving {os.path.basename(filepath)}: {e}")
+        logger.error(f"FATAL ERROR in Scopus Engine: {str(e)}", exc_info=True)
 
 # ==========================================
 # 4. CROSS-PLATFORM SYSTEM LOGIC
@@ -132,6 +135,7 @@ def launch_chrome():
         return port, chrome_process
     except Exception as e:
         print(f"❌ Failed to launch Chrome: {e}")
+        logger.error(f"❌ Failed to launch Chrome: {str(e)}", exc_info=True)
         return None, None
 
 # ==========================================
@@ -218,6 +222,7 @@ def run_scopus_scraper(first_name: str, last_name: str, output_dir: str):
                 
         except Exception as e:
             print(f"❌ ERROR: Automation failed to click the profile: {e}")
+            logger.error(f"ERROR: Automation failed to click the profile:  {str(e)}", exc_info=True)
             return None, None
             
         time.sleep(TIMEOUTS["PROFILE_LOAD_WAIT"])
@@ -368,26 +373,31 @@ def run_scopus_scraper(first_name: str, last_name: str, output_dir: str):
         print(f"\n   ✅ Done! Captured {len(papers)} TOTAL unique Scopus publications.")
 
         # ---------------------------------------------------------
-        # PHASE 6: CONSOLIDATION & RETURN (PAYLOAD SYSTEM)
+        # PHASE 6: CONSOLIDATION & PAYLOAD PACKAGING
         # ---------------------------------------------------------
-        # REPLACED: DB insertion logic with Payload return for integrated pipeline
         print("\n💾 PHASE 6: Saving Data...")
         if papers:
             os.makedirs(output_dir, exist_ok=True)
+            # Use a standardized clean name for the file
             clean_name = "".join(x for x in profile['Name'] if x.isalnum() or x in " _-")
+            
+            profile_path = os.path.join(output_dir, f"Scopus_{clean_name}_Profile.xlsx")
             papers_path = os.path.join(output_dir, f"Scopus_{clean_name}_Publications.xlsx")
             
+            # 🟢 THE FIX: Save the Profile Excel explicitly
+            save_to_excel_with_retry(pd.DataFrame([profile]), profile_path)
             save_to_excel_with_retry(pd.DataFrame(papers), papers_path)
             
+            print(f"   📊 Saved Profile to: {profile_path}")
+            print(f"   📊 Saved Publications to: {papers_path}")
+            
             payload = {"profile": profile, "papers": papers}
-            print("   ✅ Payload packaged for pipeline routing.")
             scrape_successful = True 
             return papers_path, payload
-        else:
-            return None, None
 
     except Exception as general_error:
         print(f"\n❌ A fatal error interrupted the scraper: {general_error}")
+        logger.error(f"\n❌ A fatal error interrupted the scraper: {str(general_error)}", exc_info=True)
         return None, None
 
     finally:

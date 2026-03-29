@@ -3,23 +3,28 @@ import os
 from logging.handlers import RotatingFileHandler
 
 def setup_logger(name):
-    # Ensure logs directory exists in the project root
+    # 1. Ensure logs directory exists first
     if not os.path.exists("logs"):
         os.makedirs("logs")
 
     logger = logging.getLogger(name)
     
-    # Prevent duplicate logs if setup_logger is called multiple times
+    # Only configure if handlers don't exist to prevent duplicates
     if not logger.handlers:
         logger.setLevel(logging.INFO)
 
-        # 1. ROTATING FILE HANDLER: Keeps max 5 files of 5MB each
+        # 🟢 THE FIX: Define the variable BEFORE using it below
         log_file = f"logs/{name}.log"
+
+        # 2. ROTATING FILE HANDLER with UTF-8 for Emojis
         file_handler = RotatingFileHandler(
-            log_file, maxBytes=5*1024*1024, backupCount=5
+            log_file,             # Variable is now defined
+            maxBytes=5*1024*1024, 
+            backupCount=5, 
+            encoding='utf-8'      # 🟢 Fixes the emoji-stripping issue
         )
         
-        # 2. STREAM HANDLER: Required for the GUI Audit Feed
+        # 3. STREAM HANDLER for GUI interaction
         stream_handler = logging.StreamHandler()
 
         # Professional Formatter
