@@ -48,6 +48,13 @@ try:
     from portable_scraper.core.supabase_client import supabase
 except ImportError: pass
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 
 def boot_system():
@@ -79,6 +86,7 @@ def boot_system():
 
     splash.after(100, load_progress)
     splash.mainloop()
+
 
 class PulseController(MasterpieceView):
     def __init__(self):
@@ -394,7 +402,7 @@ class PulseController(MasterpieceView):
         try:
             from PIL import Image
             # Ensure your file is named 'architecture.png' in the root directory
-            raw_img = Image.open("architecture.png") 
+            raw_img = Image.open(resource_path("architecture.png"))
             diag_img = ctk.CTkImage(light_image=raw_img, dark_image=raw_img, size=(400, 240))
             ctk.CTkLabel(about, image=diag_img, text="").pack(pady=5)
         except Exception as e:
