@@ -77,12 +77,13 @@ def boot_system():
     bar.pack(pady=50)
     bar.set(0)
     
-    def load_progress():
-        for i in range(1, 101):
-            bar.set(i/100)
-            splash.update()
-            time.sleep(0.01) # Maintains the premium 1.5s boot feel
-        splash.destroy()
+    def load_progress(i=1):
+        if i <= 100:
+            bar.set(i / 100.0)
+            splash.after(15, load_progress, i + 1)
+        else:
+            splash.quit()
+            splash.destroy()
 
     splash.after(100, load_progress)
     splash.mainloop()
@@ -185,6 +186,7 @@ class PulseController(MasterpieceView):
 
     def _run_scholar(self, f, l, a):
         import traceback
+        start_time = time.time()
         try:
             self.log_to_terminal(f"Stage 1/7: Initializing Scholar node for {f} {l}...")
             
@@ -204,12 +206,15 @@ class PulseController(MasterpieceView):
             self.log_to_terminal(f"CRITICAL ERROR: {str(e)}")
             
         finally:
+            elapsed = time.time() - start_time
+            mins, secs = divmod(elapsed, 60)
+            self.log_to_terminal(f"⏱️ Pipeline Completed in: {int(mins)}m {secs:.2f}s")
             # 🟢 THE THREAD-SAFE UNLOCK
             if self.is_alive:
                 self.after(0, self.unlock_ui)
 
     def show_scopus(self):
-        self.title_lbl.configure(text="Scopus Engine")
+        self.title_lbl.configure(text="Academic Pulse | Scopus Engine")
         self.show_scopus_view()
         self.scopus_exec.configure(command=self.start_scopus)
 
@@ -231,6 +236,7 @@ class PulseController(MasterpieceView):
         threading.Thread(target=self._run_scopus, args=(f, l), daemon=True).start()
 
     def _run_scopus(self, f, l):
+        start_time = time.time()
         try:
             self.after(0, lambda: self.pipeline_stage_var.set("1 / 7"))
             
@@ -250,10 +256,13 @@ class PulseController(MasterpieceView):
             self.log_to_terminal(f"SCOPUS ERROR: {str(e)}")
             self.after(0, lambda: self.pipeline_stage_var.set("ERR"))
         finally:
+            elapsed = time.time() - start_time
+            mins, secs = divmod(elapsed, 60)
+            self.log_to_terminal(f"⏱️ Pipeline Completed in: {int(mins)}m {secs:.2f}s")
             self.after(0, self.unlock_ui)
 
     def show_wos(self):
-        self.title_lbl.configure(text="WoS Ghosting")
+        self.title_lbl.configure(text="Academic Pulse | WoS Ghosting")
         self.show_wos_view()
         self.wos_launch_btn.configure(command=self.start_wos_session)
 
@@ -266,19 +275,19 @@ class PulseController(MasterpieceView):
         # 1. Controller Window Setup
         ctrl = tk.Toplevel(self)
         ctrl.title("WoS Ghosting Controller")
-        ctrl.geometry("420x350") 
+        ctrl.geometry("820x350") 
         ctrl.attributes("-topmost", True)
         ctrl.configure(padx=20, pady=20)
 
         # 2. Detailed Instructions (High-Contrast Fix for image_9c9c9a.png)
         instructions = (
             "🚀 MISSION CRITICAL STEPS:\n\n"
-            "1. NAVIGATE: Go to Web of Science in the opened browser.\n"
-            "2. AUTHENTICATE: Log in via VNR VJIET Institutional.\n"
-            "3. SEARCH: Select 'Researchers' tab & search target author.\n"
-            "4. SELECT: Click the exact name to open the Author Profile.\n"
-            "5. VERIFY: Ensure the 'Documents' tab is active and visible.\n"
-            "6. ATTACH: Click the button below ONLY when ready."
+            "1. NAVIGATE: Go to the WOS Author Search Page in the Google search tab.\n"
+            "2. SELECT: Click on the first link which says: 'Web of Science Author Search'.\n"
+            "3. AUTHENTICATE: Using your Web of Science credentials, log into the web page.\n"
+            "4. SEARCH: Search for your profile by entering your last name and first name.\n"
+            "5. ATTACH: After reaching the actual Author Profile page, click the button below.\n"
+            "6. PIPELINE: The 7-stage pipeline will then begin its autonomous execution."
         )
 
         label = ctk.CTkLabel(
@@ -286,7 +295,9 @@ class PulseController(MasterpieceView):
             text=instructions,
             font=("Inter", 13, "bold"),
             text_color="#0f172a", # Deep Midnight for maximum contrast
-            justify="left"
+            justify="left",
+            anchor="w",
+            wraplength=760
         )
         label.pack(fill="both", expand=True)
 
@@ -316,6 +327,7 @@ class PulseController(MasterpieceView):
         ).pack(fill="x", pady=(20, 10))
 
     def _run_wos(self, port, process):
+        start_time = time.time()
         try:
             # Using absolute pathing for the exe environment
             output_path = os.path.abspath(app_config.output_folder)
@@ -335,6 +347,11 @@ class PulseController(MasterpieceView):
         except Exception as e:
             self.after(0, self.deiconify)
             self.log_to_terminal(f"❌ WoS Fatal Error: {str(e)}")
+            
+        finally:
+            elapsed = time.time() - start_time
+            mins, secs = divmod(elapsed, 60)
+            self.log_to_terminal(f"⏱️ Pipeline Completed in: {int(mins)}m {secs:.2f}s")
 
     # --- SYSTEM SERVICES ---
     def pulse_status_dot(self):
@@ -422,39 +439,7 @@ class PulseController(MasterpieceView):
         ).pack(anchor="w", padx=50, pady=10)
         ctk.CTkButton(about, text="DISMISS", width=120, height=40, fg_color="#334155", command=about.destroy).pack(side="bottom", pady=20)
 
-# --- 🟢 RESTORED: THE SPLASH BOX (image_8c3a81.png) ---
-def boot_system():
-    splash = ctk.CTk()
-    splash.overrideredirect(True)
-    sw, sh = splash.winfo_screenwidth(), splash.winfo_screenheight()
-    splash.geometry(f"600x400+{(sw//2)-300}+{(sh//2)-200}"); splash.configure(fg_color="#0a0b10")
-    ctk.CTkLabel(splash, text="✧", font=("Inter", 80), text_color="#6366f1").pack(pady=(80, 10))
-    ctk.CTkLabel(splash, text="ACADEMIC CORE PRO", font=("Segoe UI Variable Display", 18, "bold"), text_color="#f8fafc").pack()
-    ctk.CTkLabel(splash, text="VNR VJIET | MAJOR PROJECT 2026", font=("Inter", 10), text_color="#94a3b8").pack(pady=5)
-    bar = ctk.CTkProgressBar(splash, width=400, height=4, progress_color="#6366f1", fg_color="#1e293b")
-    bar.pack(pady=50); bar.set(0)
-    def load():
-        for i in range(1, 101): bar.set(i/100); splash.update(); import time; time.sleep(0.01)
-        splash.destroy()
-    splash.after(100, load); splash.mainloop()
 
-def on_closing(self):
-        """ The 'Bulletproof' Exit: Stops all loops and silences stderr before destruction """
-        import os
-        self.is_alive = False
-        
-        # 1. Stop background loops
-        for tid in self.after_ids:
-            try: self.after_cancel(tid)
-            except: pass
-            
-        # 2. Hard Silencer for terminal output
-        sys.stderr = open(os.devnull, 'w')
-        
-        # 3. Proper teardown sequence
-        self.withdraw()
-        self.quit()
-        self.destroy()
 
 if __name__ == "__main__":
     # 1. Start the Splash Screen first
@@ -463,6 +448,10 @@ if __name__ == "__main__":
     # 2. Initialize the main application
     ctk.set_appearance_mode("Dark")
     app = PulseController()
+    
+    # 🟢 GLOBAL SYSTEM REDIRECT: Push all terminal output to the GUI Dashboard
+    sys.stdout = IORedirector(app.log_to_terminal, logger)
+    sys.stderr = IORedirector(app.log_to_terminal, logger) # Also catch crashes
     
     try:
         app.mainloop()

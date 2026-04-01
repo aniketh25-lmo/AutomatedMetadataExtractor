@@ -12,6 +12,34 @@ T_TEXT = ("#3B4953", "#f8fafc")
 T_SUBTEXT = ("#5A7863", "#DCD6F7")
 T_TERMINAL = ("#000000", "#000000")
 
+class ToolTip:
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text = text
+        self.tw = None
+        self.widget.bind("<Enter>", self.show)
+        self.widget.bind("<Leave>", self.hide)
+
+    def show(self, event=None):
+        if self.tw: return
+        x = self.widget.winfo_rootx() - 380
+        y = self.widget.winfo_rooty() + self.widget.winfo_height() + 5
+        self.tw = tk.Toplevel(self.widget)
+        self.tw.wm_overrideredirect(True)
+        self.tw.wm_attributes("-topmost", True)
+        self.tw.wm_geometry(f"+{x}+{y}")
+        
+        frame = ctk.CTkFrame(self.tw, fg_color="#0f172a", corner_radius=8, border_width=1, border_color="#6366f1")
+        frame.pack(fill="both", expand=True)
+        
+        lbl = ctk.CTkLabel(frame, text=self.text, font=("Inter", 12), text_color="#f8fafc", justify="left")
+        lbl.pack(padx=20, pady=15)
+
+    def hide(self, event=None):
+        if self.tw:
+            self.tw.destroy()
+            self.tw = None
+
 class MasterpieceView(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -131,10 +159,20 @@ class MasterpieceView(ctk.CTk):
         self.title_lbl = ctk.CTkLabel(self.header, text="Academic Pulse", font=self.font_h1, text_color=T_TEXT)
         self.title_lbl.pack(anchor="w")
         
+        # 🟢 Header Buttons Frame
+        self.hdr_btns = ctk.CTkFrame(self.header, fg_color="transparent")
+        self.hdr_btns.place(relx=1.0, rely=0.5, anchor="e")
+
         # 🟢 RESTORED: Theme Toggle (Fixed the AttributeError)
-        self.theme_btn = ctk.CTkButton(self.header, text="🌙", width=40, height=40, corner_radius=10,
+        self.theme_btn = ctk.CTkButton(self.hdr_btns, text="🌙", width=40, height=40, corner_radius=10,
                                         fg_color=T_CARD, border_width=1, border_color=T_BORDER, font=("Inter", 16))
-        self.theme_btn.place(relx=1.0, rely=0.5, anchor="e")
+        self.theme_btn.pack(side="right")
+
+        # 🟢 Pipeline Info Toggle & Tooltip
+        self.info_btn = ctk.CTkButton(self.hdr_btns, text="ℹ", width=40, height=40, corner_radius=10,
+                                        fg_color=T_CARD, border_width=1, border_color=T_BORDER, font=("Inter", 18))
+        # Initialized but explicitly hidden on the generic Dashboard viewport
+        self.info_tooltip = ToolTip(self.info_btn, "")
         
         # B. Dynamic Canvas (Now fills only necessary X, not greedy on Y)
         self.canvas = ctk.CTkFrame(self.viewport, fg_color="transparent", corner_radius=0)
@@ -151,6 +189,7 @@ class MasterpieceView(ctk.CTk):
     def show_dash_view(self, greeting_txt):
         """ High-Density Dashboard: No double-scrollbars """
         for w in self.canvas.winfo_children(): w.destroy()
+        self.info_btn.pack_forget() # Hide the icon globally
         
         greet_frame = ctk.CTkFrame(self.canvas, fg_color="transparent")
         greet_frame.pack(fill="x", pady=(5, 10))
@@ -206,6 +245,17 @@ class MasterpieceView(ctk.CTk):
 
     def show_scholar_view(self):
         self.clear_canvas()
+        self.info_btn.pack(side="right", padx=(0, 15))
+        self.info_tooltip.text = (
+            "Google Scholar Pipeline:\n\n"
+            "1. Node Init: Submits author parameters to Scholar search.\n"
+            "2. Scrape Layer: Browser navigates profiles & bypasses captchas.\n"
+            "3. Extraction: Parses h-index, citations, and publication metrics.\n"
+            "4. Identity Linker: Fuzzy matches author affiliations/titles.\n"
+            "5. Refiner: Cleans HTML artifacts into standard UTF-8 format.\n"
+            "6. Backup: Stores cached JSON payload locally in '/outputs'.\n"
+            "7. Supabase Sync: Upserts structured records to Cloud DB."
+        )
         form = ctk.CTkFrame(self.canvas, fg_color=T_CARD, border_width=1, border_color=T_BORDER, corner_radius=24)
         form.pack(pady=20, ipadx=40, ipady=10)
         ctk.CTkLabel(form, text="New Author Search", font=self.font_h2, text_color=T_TEXT).pack(pady=(30, 5))
@@ -218,6 +268,17 @@ class MasterpieceView(ctk.CTk):
 
     def show_scopus_view(self):
         self.clear_canvas()
+        self.info_btn.pack(side="right", padx=(0, 15))
+        self.info_tooltip.text = (
+            "Scopus API Pipeline:\n\n"
+            "1. Node Init: Passes target names to Elsevier endpoint.\n"
+            "2. Scrape Layer: Fetches heavily structured API responses.\n"
+            "3. Extraction: Extracts exact DOI, ISSN, and Scopus citations.\n"
+            "4. Identity Linker: Validates strict author IDs using RapidFuzz.\n"
+            "5. Refiner: Prunes duplicate metadata payloads.\n"
+            "6. Backup: Dumps immutable JSON structure directly to '/outputs'.\n"
+            "7. Supabase Sync: Pushes validated records directly to Master DB."
+        )
         form = ctk.CTkFrame(self.canvas, fg_color=T_CARD, border_width=1, border_color=T_BORDER, corner_radius=24)
         form.pack(pady=20, ipadx=40, ipady=10)
         ctk.CTkLabel(form, text="Scopus API Extraction", font=self.font_h2, text_color=T_TEXT).pack(pady=(30, 5))
@@ -229,6 +290,17 @@ class MasterpieceView(ctk.CTk):
 
     def show_wos_view(self):
         self.clear_canvas()
+        self.info_btn.pack(side="right", padx=(0, 15))
+        self.info_tooltip.text = (
+            "WoS Ghosting Pipeline:\n\n"
+            "1. Node Init: Attaches robot to an authenticated browser port.\n"
+            "2. Scrape Layer: Extracts structured document tree across active pages.\n"
+            "3. Extraction: Captures WoS indexing metrics & Clarivate analytics.\n"
+            "4. Identity Linker: Reconciles author identity via heuristics.\n"
+            "5. Refiner: Standardizes deep payload into precise UTF-8 schema.\n"
+            "6. Backup: Localized memory snapshots are saved safely.\n"
+            "7. Supabase Sync: The unified profile is securely pushed to Supabase."
+        )
         # 🟢 RESTORED: The WoS Content Card (image_98e5ea.png)
         card = ctk.CTkFrame(self.canvas, fg_color=T_CARD, border_width=1, border_color=T_BORDER, corner_radius=24)
         card.pack(pady=50, padx=50, fill="x")
