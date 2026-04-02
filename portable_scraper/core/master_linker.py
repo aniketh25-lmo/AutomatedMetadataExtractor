@@ -80,22 +80,39 @@ def run_targeted_linker(payload: dict, source: str):
         if not title: continue
         
         doi = p.get("DOI", p.get("doi"))
-        citations = int(re.sub(r"[^\d]", "", str(p.get("Citations", 0))) or 0)
-        year = int(re.sub(r"[^\d]", "", str(p.get("Year", p.get("Date/Year", 0)))) or 0)
+        c_raw = str(p.get("Citations", p.get("citations", p.get("Times Cited", 0))))
+        citations = int(re.sub(r"[^\d]", "", c_raw) or 0)
         
+        year_raw = str(p.get("Year", p.get("year", p.get("Date/Year", p.get("date", 0)))))
+        year = int(re.sub(r"[^\d]", "", year_raw) or 0)
+        
+        source_name = p.get("Source", p.get("source", p.get("journal", "")))
+        authors_list = p.get("Authors", p.get("authors", ""))
+        abstract_txt = p.get("Abstract", p.get("abstract", p.get("description", "")))
+        paper_url = p.get("Link", p.get("link", p.get("URL", p.get("url", p.get("paper_url", "")))))
+        
+        vol = p.get("Volume", p.get("volume", ""))
+        iss = p.get("Issue", p.get("issue", ""))
+        pgs = p.get("Pages", p.get("pages", ""))
+        vol_str = f"Vol: {vol}, Iss: {iss}, Pgs: {pgs}" if (vol or iss or pgs) else ""
 
         # Match by DOI or High Title Similarity (Safeguarded against NULL titles)
         match = next((mp for mp in existing_master if (doi and mp.get("doi") == doi) or (fuzz.ratio(title.lower(), str(mp.get("title") or "").lower()) > 88)), None)
         
         if match:
             # Update existing golden record with new source flags
-
             updates = {
                 f"in_{source}": True, 
                 f"{source}_citations": citations
             }
+            # Patch missing essential metadata gaps across platforms
             if not match.get("doi") and doi: updates["doi"] = doi
-            if not match.get("abstract") and p.get("Abstract"): updates["abstract"] = p.get("Abstract")
+            if not match.get("abstract") and abstract_txt: updates["abstract"] = abstract_txt
+            if not match.get("publication_year") and year: updates["publication_year"] = year
+            if not match.get("source_name") and source_name: updates["source_name"] = source_name
+            if not match.get("authors_list") and authors_list: updates["authors_list"] = authors_list
+            if not match.get("volume_issue_pages") and vol_str: updates["volume_issue_pages"] = vol_str
+            if not match.get("paper_url") and paper_url: updates["paper_url"] = paper_url
             
             supabase.table("master_publications").update(updates).eq("id", match["id"]).execute()
             updated_count += 1
@@ -106,16 +123,17 @@ def run_targeted_linker(payload: dict, source: str):
                 "title": title, 
                 "doi": doi,
                 "publication_year": year, 
-                "source_name": p.get("Source", p.get("source")),
-                "authors_list": p.get("Authors", p.get("authors")), 
-                "abstract": p.get("Abstract", p.get("description")),
+                "source_name": source_name,
+                "authors_list": authors_list, 
+                "abstract": abstract_txt,
+                "paper_url": paper_url,
                 f"in_{source}": True, 
                 f"{source}_citations": citations,
                 "academic_year": "2024-2025", 
                 "department": "CSE"
             }
-            if source == "scholar":
-                new_paper["volume_issue_pages"] = f"Vol: {p.get('Volume', '')}, Iss: {p.get('Issue', '')}, Pgs: {p.get('Pages', '')}"
+            if vol_str:
+                new_paper["volume_issue_pages"] = vol_str
             
             new_master_papers.append(new_paper)
             existing_master.append(new_paper) # Add to local memory so we don't duplicate within the same payload

@@ -38,7 +38,6 @@ def run_targeted_refiner(master_uuid: str):
     
     print(f"   📄 Classifying {len(papers)} Golden Papers...")
     for p in papers:
-        cat = intelligent_classify(p.get("source_name"), p.get("title"))
         updates = {
             "source_name": p.get("source_name").upper() if p.get("source_name") else "NOT PROVIDED BY SOURCE",
             "academic_year": f"{p['publication_year']}-{p['publication_year']+1}" if p.get('publication_year') else "N/A"
