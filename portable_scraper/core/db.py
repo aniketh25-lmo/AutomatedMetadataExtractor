@@ -151,11 +151,23 @@ def push_wos_payload(payload: dict):
         "orcid": profile.get("ORCID"),
         "subject_categories": profile.get("Subject Categories"),
         "total_documents": clean_to_int(profile.get("Total Documents")),
+        "publications_indexed_in_wos": clean_to_int(profile.get("Publications Indexed in WoS")),
+        "wos_core_collection_publications": clean_to_int(profile.get("WoS Core Collection Publications")),
+        "preprints": clean_to_int(profile.get("Preprints")),
+        "dissertations_theses": clean_to_int(profile.get("Dissertations or Theses")),
+        "non_indexed_publications": clean_to_int(profile.get("Non-Indexed Publications")),
         "h_index": clean_to_int(profile.get("H-Index")),
         "sum_of_times_cited": clean_to_int(profile.get("Sum of Times Cited")),
         "citing_articles": clean_to_int(profile.get("Citing Articles")),
+        "sum_of_times_cited_without_self_citations": clean_to_int(profile.get("Sum of Times Cited without self-citations")),
+        "citing_articles_without_self_citations": clean_to_int(profile.get("Citing Articles without self-citations")),
+        "sum_of_times_cited_by_patents": clean_to_int(profile.get("Sum of Times Cited by Patents")),
+        "citing_patents": clean_to_int(profile.get("Citing Patents")),
+        "sum_of_times_cited_by_policy": clean_to_int(profile.get("Sum of Times Cited by Policy")),
+        "citing_policy_documents": clean_to_int(profile.get("Citing Policy Documents")),
         "verified_peer_reviews": clean_to_int(profile.get("Verified Peer Reviews")),
         "verified_editor_records": clean_to_int(profile.get("Verified Editor Records")),
+        "awarded_grants": clean_to_int(profile.get("Awarded Grants")),
         "profile_url": profile.get("Profile URL")
     }
 
@@ -182,7 +194,9 @@ def push_wos_payload(payload: dict):
             "abstract": p.get("Abstract"),
             "citations": clean_to_int(p.get("Citations")),
             "reference_count": clean_to_int(p.get("References")),
-            "url": p.get("URL")
+            "url": p.get("URL"),
+            "publisher_url": p.get("Publisher_URL"),
+            "doi": p.get("DOI")
         }
 
         def handle_wos_paper():

@@ -34,7 +34,7 @@ def run_targeted_refiner(master_uuid: str):
         print("   ✅ Golden Author metrics synchronized.")
 
     # 2. Publication Classification Fix (Targeted)
-    papers = supabase.table("master_publications").select("id, source_name, title, publication_year").eq("master_author_id", master_uuid).execute().data
+    papers = supabase.table("master_publications").select("id, source_name, title, publication_year").contains("master_author_ids", [master_uuid]).execute().data
     
     print(f"   📄 Classifying {len(papers)} Golden Papers...")
     for p in papers:
