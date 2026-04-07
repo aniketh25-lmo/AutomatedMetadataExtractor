@@ -146,7 +146,6 @@ def run_targeted_linker(payload: dict, source: str):
         c_raw = str(p.get("Citations", p.get("citations", p.get("Times Cited", 0))))
         citations = int(re.sub(r"[^\d]", "", c_raw) or 0)
         
-<<<<<<< HEAD
         year_raw = str(p.get("Year", p.get("year", p.get("Date/Year", p.get("date", 0)))))
         year = int(re.sub(r"[^\d]", "", year_raw) or 0)
         
@@ -159,10 +158,7 @@ def run_targeted_linker(payload: dict, source: str):
         iss = p.get("Issue", p.get("issue", ""))
         pgs = p.get("Pages", p.get("pages", ""))
         vol_str = f"Vol: {vol}, Iss: {iss}, Pgs: {pgs}" if (vol or iss or pgs) else ""
-
-        # Match by DOI or High Title Similarity (Safeguarded against NULL titles)
-        match = next((mp for mp in existing_master if (doi and mp.get("doi") == doi) or (fuzz.ratio(title.lower(), str(mp.get("title") or "").lower()) > 88)), None)
-=======
+        
         clean_inc_title = re.sub(r'[^a-z0-9]', '', title.lower())
         
         match = None
@@ -181,7 +177,6 @@ def run_targeted_linker(payload: dict, source: str):
                 if score > 92: # Aggressive matching score to catch trailing periods or typos
                     match = mp
                     break
->>>>>>> feat/testing
         
         if match:
             # Update existing golden record with new source flags
@@ -189,9 +184,6 @@ def run_targeted_linker(payload: dict, source: str):
                 f"in_{source}": True, 
                 f"{source}_citations": citations
             }
-<<<<<<< HEAD
-            # Patch missing essential metadata gaps across platforms
-=======
             
             # --- THE ARRAY APPEND LOGIC ---
             # Extract the active array, append new UUID if missing, and push it back!
@@ -199,7 +191,6 @@ def run_targeted_linker(payload: dict, source: str):
             if master_uuid not in current_ids:
                 current_ids.append(master_uuid)
                 updates["master_author_ids"] = current_ids
->>>>>>> feat/testing
             if not match.get("doi") and doi: updates["doi"] = doi
             if not match.get("abstract") and abstract_txt: updates["abstract"] = abstract_txt
             if not match.get("publication_year") and year: updates["publication_year"] = year
@@ -233,16 +224,11 @@ def run_targeted_linker(payload: dict, source: str):
                 "academic_year": "2024-2025", 
                 "department": "CSE"
             }
-<<<<<<< HEAD
-            if vol_str:
-                new_paper["volume_issue_pages"] = vol_str
-=======
             if source == "scholar":
                 new_paper["volume_issue_pages"] = f"Vol: {p.get('Volume', '')}, Iss: {p.get('Issue', '')}, Pgs: {p.get('Pages', '')}"
             elif source == "wos":
                 new_paper["wos_category"] = p.get("Category")
                 new_paper["publisher_url"] = p.get("Publisher_URL")
->>>>>>> feat/testing
             
             new_master_papers.append(new_paper)
             existing_master.append(new_paper) # Add to local memory so we don't duplicate within the same payload
