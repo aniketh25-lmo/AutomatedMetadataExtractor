@@ -39,25 +39,47 @@ def test_pipeline(profile_path, papers_path, source):
         print(f"⚠️ Could not find the Excel outputs for {source.upper()}. Verify the path exists.")
 
 if __name__ == "__main__":
-    # 1. Run Scholar (Should resolve to the active Scholar Golden Record or match the fuzzy name)
+    # ==========================
+    # BABY VADLANA TEST (Full Tri-Source Test from dist/outputs)
+    # ==========================
+    # 1. Scholar
+    test_pipeline(
+        "dist/outputs/Scholar_Vadlana_B_Profile.xlsx",
+        "dist/outputs/Scholar_Vadlana_B_Exhaustive.xlsx",
+        "scholar"
+    )
+    
+    # 2. Scopus
+    test_pipeline(
+        "dist/outputs/Scopus_Vadlana Baby_Profile.xlsx",
+        "dist/outputs/Scopus_Vadlana Baby_Publications.xlsx",
+        "scopus"
+    )
+    
+    # 3. Web of Science
+    test_pipeline(
+        "dist/outputs/WoS_Baby Vadlana_Profile.xlsx",
+        "dist/outputs/WoS_Baby Vadlana_Publications.xlsx",
+        "wos"
+    )
+    
+    # ==========================
+    # SRINIVAS KANAKALA TEST
+    # ==========================
     test_pipeline(
         "outputs/Scholar_Kanakala_S_Profile.xlsx",
         "outputs/Scholar_Kanakala_S_Exhaustive.xlsx",
         "scholar"
     )
-    
-    # 2. Run Scopus (Should confidently match the Scholar Golden Record via >85 Fuzzy Match)
     test_pipeline(
         "outputs/Scopus_Kanakala Srinivas_Profile.xlsx",
         "outputs/Scopus_Kanakala Srinivas_Publications.xlsx",
         "scopus"
     )
-    
-    # 3. Run WoS (Should confidently match the exact same unified record)
     test_pipeline(
         "outputs/WoS_SRINIVAS KANAKALA_Profile.xlsx",
         "outputs/WoS_SRINIVAS KANAKALA_Publications.xlsx",
         "wos"
     )
 
-    print("\n✅ Offline Data Pipeline Test Complete!")
+    print("\n✅ Offline Data Pipeline Test Complete! Check Supabase.")

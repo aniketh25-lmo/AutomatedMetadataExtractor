@@ -1,9 +1,17 @@
+import sys
+import os
+
+# --- EARLY STREAMS FIX FOR PYINSTALLER WINDOWED MODE ---
+class NullWriter:
+    def write(self, text): pass
+    def flush(self): pass
+if sys.stdout is None: sys.stdout = NullWriter()
+if sys.stderr is None: sys.stderr = NullWriter()
+
 from portable_scraper.ui_components import MasterpieceView, T_ACCENT, T_BG, T_SUBTEXT, T_CARD, T_BORDER, T_TEXT
 import customtkinter as ctk
 import tkinter as tk
 import threading
-import os
-import sys
 from datetime import datetime
 from tkinter import messagebox  # 🟢 THE FIX
 import traceback

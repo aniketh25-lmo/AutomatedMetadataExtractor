@@ -25,8 +25,13 @@ PyInstaller.__main__.run([
     # Backend & Security Hidden Imports
     "--hidden-import=supabase",
     "--hidden-import=postgrest",
+    "--hidden-import=gotrue",
+    "--hidden-import=storage3",
+    "--hidden-import=realtime",
+    "--hidden-import=websockets",
     "--hidden-import=rapidfuzz",
     "--hidden-import=requests",
+    "--copy-metadata=webdriver_manager",
 
     # --- DATA INCLUSION ---
     "--add-data=portable_scraper;portable_scraper",
