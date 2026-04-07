@@ -157,6 +157,7 @@ def run_scholar_scraper(first_name, last_name, affiliation="", output_dir=""):
                 
                 p_data = {
                     "Title": driver.find_element(By.ID, f"gsc_{pre}_title").text,
+                    "Document Type": "Publication",
                     "Authors": None, "Source": None, "Year": None, "Volume": None, 
                     "Issue": None, "Pages": None, "Publisher": None, "Description": None,
                     "Citations": "0", "URL": paper_url
@@ -169,7 +170,7 @@ def run_scholar_scraper(first_name, last_name, affiliation="", output_dir=""):
                         lbl = field.find_element(By.CLASS_NAME, f"gsc_{pre}_field").text.lower()
                         val = field.find_element(By.CLASS_NAME, f"gsc_{pre}_value").text
                         
-                        if "authors" in lbl: p_data["Authors"] = val
+                        if "authors" in lbl or "inventors" in lbl: p_data["Authors"] = val
                         elif "date" in lbl: p_data["Year"] = val.split('/')[0]
                         elif any(k in lbl for k in ["journal", "source", "conference"]): p_data["Source"] = val
                         elif "volume" in lbl: p_data["Volume"] = val
@@ -178,6 +179,11 @@ def run_scholar_scraper(first_name, last_name, affiliation="", output_dir=""):
                         elif "publisher" in lbl: p_data["Publisher"] = val
                         elif "description" in lbl: p_data["Description"] = val
                         elif "total citations" in lbl: p_data["Citations"] = val.split('\n')[0].replace("Cited by ", "")
+                        
+                        # Flag Patents explicitly
+                        if any(k in lbl for k in ["patent office", "patent number", "inventors", "application number"]):
+                            p_data["Document Type"] = "Patent"
+                            if not p_data["Source"]: p_data["Source"] = val # Catch the patent number/office as source
                     except:
                         continue
 

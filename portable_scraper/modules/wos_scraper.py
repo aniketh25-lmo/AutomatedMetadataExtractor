@@ -136,8 +136,12 @@ def parse_profile_text(raw_text):
     profile = {
         "Name": "", "Published Name": "", "Organization": "",
         "WoS_ID": "", "ORCID": "", "Subject Categories": "",
-        "Total Documents": "0", "H-Index": "0", "Sum of Times Cited": "0",
-        "Citing Articles": "0", "Verified Peer Reviews": "0", "Verified Editor Records": "0",
+        "Total Documents": "0", "Publications Indexed in WoS": "0", "WoS Core Collection Publications": "0", "Preprints": "0", "Dissertations or Theses": "0", "Non-Indexed Publications": "0",
+        "H-Index": "0", "Sum of Times Cited": "0", "Citing Articles": "0", 
+        "Sum of Times Cited without self-citations": "0", "Citing Articles without self-citations": "0",
+        "Sum of Times Cited by Patents": "0", "Citing Patents": "0",
+        "Sum of Times Cited by Policy": "0", "Citing Policy Documents": "0",
+        "Verified Peer Reviews": "0", "Verified Editor Records": "0", "Awarded Grants": "0",
         "Profile URL": ""
     }
     
@@ -152,18 +156,42 @@ def parse_profile_text(raw_text):
                 profile["ORCID"] = line.split("orcid.org/")[-1].strip()
             elif "published name" in line_lower and i + 1 < len(lines):
                 profile["Published Name"] = lines[i+1]
-            elif line_lower == "organization" and i + 1 < len(lines):
+            elif line_lower in ["organization", "organizations", "primary organization", "current institution"] and i + 1 < len(lines):
                 profile["Organization"] = lines[i+1]
             elif "subject categories" in line_lower and i + 1 < len(lines):
                 profile["Subject Categories"] = lines[i+1]
             elif line_lower == "total documents" and i - 1 >= 0:
                 profile["Total Documents"] = lines[i-1] 
+            elif line_lower == "publications indexed in web of science" and i - 1 >= 0:
+                profile["Publications Indexed in WoS"] = lines[i-1]
+            elif line_lower == "web of science core collection publications" and i - 1 >= 0:
+                profile["WoS Core Collection Publications"] = lines[i-1]
+            elif line_lower == "preprint" and i - 1 >= 0:
+                profile["Preprints"] = lines[i-1]
+            elif line_lower == "dissertations or theses" and i - 1 >= 0:
+                profile["Dissertations or Theses"] = lines[i-1]
+            elif line_lower == "non-indexed publications" and i - 1 >= 0:
+                profile["Non-Indexed Publications"] = lines[i-1]
+            elif "awarded grants" in line_lower and i - 1 >= 0:
+                profile["Awarded Grants"] = lines[i-1]
             elif line_lower == "h-index" and i - 1 >= 0:
                 profile["H-Index"] = lines[i-1]
             elif line_lower == "sum of times cited" and profile["Sum of Times Cited"] == "0" and i - 1 >= 0:
                 profile["Sum of Times Cited"] = lines[i-1]
-            elif "citing articles" in line_lower and i - 1 >= 0:
+            elif line_lower == "sum of times cited without self-citations" and i - 1 >= 0:
+                profile["Sum of Times Cited without self-citations"] = lines[i-1]
+            elif line_lower == "sum of times cited by patents" and i - 1 >= 0:
+                profile["Sum of Times Cited by Patents"] = lines[i-1]
+            elif line_lower == "sum of times cited by policy" and i - 1 >= 0:
+                profile["Sum of Times Cited by Policy"] = lines[i-1]
+            elif "citing articles" in line_lower and "without self-citations" not in line_lower and profile["Citing Articles"] == "0" and i - 1 >= 0:
                 profile["Citing Articles"] = lines[i-1]
+            elif line_lower == "citing articles without self-citations" and i - 1 >= 0:
+                profile["Citing Articles without self-citations"] = lines[i-1]
+            elif line_lower == "citing patents" and i - 1 >= 0:
+                profile["Citing Patents"] = lines[i-1]
+            elif line_lower == "citing policy documents" and i - 1 >= 0:
+                profile["Citing Policy Documents"] = lines[i-1]
             elif "verified peer reviews" in line_lower and i - 1 >= 0:
                 profile["Verified Peer Reviews"] = lines[i-1]
             elif "verified editor records" in line_lower and i - 1 >= 0:
@@ -400,8 +428,14 @@ def attach_and_scrape_wos(debug_port, chrome_process, output_dir: str):
                                 parsed_paper = parse_record_text(text, active_category)
                                 
                                 if parsed_paper:
+                                    parsed_paper["Publisher_URL"] = ""
                                     if actual_link:
                                         parsed_paper["URL"] = actual_link
+                                        
+                                        # 🟢 URL EXTRACTION 
+                                        parsed_paper["Publisher_URL"] = ""
+                                        parsed_paper["DOI"] = ""
+
                                     papers_data.append(parsed_paper)
                         
                         current_scroll += scroll_step
