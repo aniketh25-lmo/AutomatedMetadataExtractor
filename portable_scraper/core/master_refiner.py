@@ -40,7 +40,7 @@ def run_targeted_refiner(master_uuid: str):
     for p in papers:
         updates = {
             "source_name": p.get("source_name").upper() if p.get("source_name") else "NOT PROVIDED BY SOURCE",
-            "academic_year": f"{p['publication_year']}-{p['publication_year']+1}" if p.get('publication_year') else "N/A"
+            "academic_year": f"{p['publication_year']}-{p['publication_year']+1}" if p.get('publication_year') and 1900 <= p['publication_year'] <= 2099 else "N/A"
         }
         supabase.table("master_publications").update(updates).eq("id", p["id"]).execute()
 

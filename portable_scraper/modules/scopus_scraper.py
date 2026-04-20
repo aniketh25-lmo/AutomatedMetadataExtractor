@@ -197,6 +197,23 @@ def run_scopus_scraper(first_name: str, last_name: str, output_dir: str):
 
         check_for_captcha(driver)
 
+        # --- Pre-check: Verify search returned at least one author result ---
+        print("\n🔍 Verifying search results...")
+        try:
+            author_links_check = driver.find_elements(
+                By.CSS_SELECTOR, "a[data-testid='author-link'], a[href*='authorId=']"
+            )
+            page_body = driver.find_element(By.TAG_NAME, "body").text.lower()
+            no_results_indicators = [
+                "no results found", "no authors found",
+                "your search did not match", "0 results"
+            ]
+            if not author_links_check or any(ind in page_body for ind in no_results_indicators):
+                print(f"❌ No Scopus profile found for '{first_name} {last_name}'. The author search returned no results.")
+                return None, None
+        except Exception:
+            pass  # If the check itself fails, proceed and let the click attempt surface the real error
+
         print("\n🖱️ Selecting target Author Profile...")
         try:
             # 🟢 GENERALIZED FUZZY MATCH: 
@@ -221,8 +238,8 @@ def run_scopus_scraper(first_name: str, last_name: str, output_dir: str):
                 elem.click()
                 
         except Exception as e:
-            print(f"❌ ERROR: Automation failed to click the profile: {e}")
-            logger.error(f"ERROR: Automation failed to click the profile:  {str(e)}", exc_info=True)
+            print(f"❌ No Scopus profile found for '{first_name} {last_name}'. Could not locate a matching author entry.")
+            logger.error(f"Scopus profile selection failed for {first_name} {last_name}: {str(e)}", exc_info=True)
             return None, None
             
         time.sleep(TIMEOUTS["PROFILE_LOAD_WAIT"])
@@ -376,24 +393,24 @@ def run_scopus_scraper(first_name: str, last_name: str, output_dir: str):
         # PHASE 6: CONSOLIDATION & PAYLOAD PACKAGING
         # ---------------------------------------------------------
         print("\n💾 PHASE 6: Saving Data...")
+        os.makedirs(output_dir, exist_ok=True)
+        clean_name = "".join(x for x in profile['Name'] if x.isalnum() or x in " _-")
+
+        profile_path = os.path.join(output_dir, f"Scopus_{clean_name}_Profile.xlsx")
+        save_to_excel_with_retry(pd.DataFrame([profile]), profile_path)
+        print(f"   📊 Saved Profile to: {profile_path}")
+
+        payload = {"profile": profile, "papers": papers}
+        scrape_successful = True
+
         if papers:
-            os.makedirs(output_dir, exist_ok=True)
-            # Use a standardized clean name for the file
-            clean_name = "".join(x for x in profile['Name'] if x.isalnum() or x in " _-")
-            
-            profile_path = os.path.join(output_dir, f"Scopus_{clean_name}_Profile.xlsx")
             papers_path = os.path.join(output_dir, f"Scopus_{clean_name}_Publications.xlsx")
-            
-            # 🟢 THE FIX: Save the Profile Excel explicitly
-            save_to_excel_with_retry(pd.DataFrame([profile]), profile_path)
             save_to_excel_with_retry(pd.DataFrame(papers), papers_path)
-            
-            print(f"   📊 Saved Profile to: {profile_path}")
             print(f"   📊 Saved Publications to: {papers_path}")
-            
-            payload = {"profile": profile, "papers": papers}
-            scrape_successful = True 
             return papers_path, payload
+        else:
+            print("   ⚠️ No publications found for this author, but profile data has been saved.")
+            return profile_path, payload
 
     except Exception as general_error:
         print(f"\n❌ A fatal error interrupted the scraper: {general_error}")

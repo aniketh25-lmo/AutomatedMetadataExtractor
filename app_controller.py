@@ -343,9 +343,12 @@ class PulseController(MasterpieceView):
             
             self.after(0, self.deiconify)
             
-            if payload and payload.get("papers"):
+            if payload:
                 run_processing_pipeline("wos", payload)
-                self.log_to_terminal("✅ WoS Master Pipeline Successful.")
+                if payload.get("papers"):
+                    self.log_to_terminal("✅ WoS Master Pipeline Successful.")
+                else:
+                    self.log_to_terminal("⚠️ No publications scraped — author profile metrics synced only.")
             else:
                 # 🟢 THE FIX: Log if the scraper returned nothing
                 self.log_to_terminal("⚠️ WoS Sync Skipped: No publications were captured.")

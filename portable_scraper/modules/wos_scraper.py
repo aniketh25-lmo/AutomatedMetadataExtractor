@@ -469,33 +469,28 @@ def attach_and_scrape_wos(debug_port, chrome_process, output_dir: str):
 
         print(f"\n   ✅ Done! Captured {len(papers_data)} TOTAL unique publications.")
 
-        # 🟢 FINAL HANDOFF LAYER
+        # 🟢 FINAL HANDOFF LAYER — Always save profile; publications only if non-empty
+        os.makedirs(output_dir, exist_ok=True)
+        clean_name = "".join(x for x in profile_data['Name'] if x.isalnum() or x in " _-")
+
+        profile_path = os.path.join(output_dir, f"WoS_{clean_name}_Profile.xlsx")
+        save_to_excel_with_retry(pd.DataFrame([profile_data]), profile_path)
+        print(f"\n📊 Saved Profile to: {profile_path}")
+
+        payload = {"profile": profile_data, "papers": papers_data}
+        scrape_successful = True
+
         if papers_data:
-            os.makedirs(output_dir, exist_ok=True)
-            clean_name = "".join(x for x in profile_data['Name'] if x.isalnum() or x in " _-")
-            
-            profile_path = os.path.join(output_dir, f"WoS_{clean_name}_Profile.xlsx")
             papers_path = os.path.join(output_dir, f"WoS_{clean_name}_Publications.xlsx")
-            
-            save_to_excel_with_retry(pd.DataFrame([profile_data]), profile_path)
             save_to_excel_with_retry(pd.DataFrame(papers_data), papers_path)
-            
-            print(f"\n📊 Saved Profile to: {profile_path}")
             print(f"📊 Saved Publications to: {papers_path}")
-            
-            # 🟢 STANDARDIZED KEYS: Changed to "profile" and "papers"
-            payload = {"profile": profile_data, "papers": papers_data}
-            scrape_successful = True 
-            
             return papers_path, payload
-        
-        
         else:
-            print("❌ No publications were scraped. Exiting without saving.")
-            return None, None
+            print("⚠️ No publications found for this author, but profile data has been saved.")
+            return profile_path, payload
 
     except Exception as general_error:
-        logger.error(f"Internal WoS Scraper Error: {str(e)}", exc_info=True)
+        logger.error(f"Internal WoS Scraper Error: {str(general_error)}", exc_info=True)
         return None, None
         # print(f"\n❌ A fatal error interrupted the scraper: {general_error}")
         # return None, None

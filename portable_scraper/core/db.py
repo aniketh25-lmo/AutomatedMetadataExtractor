@@ -117,7 +117,7 @@ def push_scholar_payload(payload: dict):
             "title": p.get("Title"),
             "authors": p.get("Authors"),
             "source": p.get("Source"),
-            "year": clean_to_int(p.get("Year")),
+            "year": int(re.search(r'\b(19|20)\d{2}\b', str(p.get("Year", ""))).group(0)) if re.search(r'\b(19|20)\d{2}\b', str(p.get("Year", ""))) else None,
             "volume": p.get("Volume"),
             "issue": p.get("Issue"),
             "pages": p.get("Pages"),
@@ -127,7 +127,7 @@ def push_scholar_payload(payload: dict):
             "url": p.get("URL")
         }
 
-        retry_db_call(lambda: supabase.table("scholar_papers").upsert(paper_clean, on_conflict="scholar_id, title").execute())
+        retry_db_call(lambda p=paper_clean: supabase.table("scholar_papers").upsert(p, on_conflict="scholar_id, title").execute())
         
  
 

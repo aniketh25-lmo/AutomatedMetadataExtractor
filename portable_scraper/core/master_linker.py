@@ -147,7 +147,8 @@ def run_targeted_linker(payload: dict, source: str):
         citations = int(re.sub(r"[^\d]", "", c_raw) or 0)
         
         year_raw = str(p.get("Year", p.get("year", p.get("Date/Year", p.get("date", 0)))))
-        year = int(re.sub(r"[^\d]", "", year_raw) or 0)
+        _year_match = re.search(r'\b(19|20)\d{2}\b', year_raw)
+        year = int(_year_match.group(0)) if _year_match else 0
         
         source_name = p.get("Source", p.get("source", p.get("journal", "")))
         authors_list = p.get("Authors", p.get("authors", ""))
@@ -221,7 +222,7 @@ def run_targeted_linker(payload: dict, source: str):
                 "paper_url": paper_url,
                 f"in_{source}": True, 
                 f"{source}_citations": citations,
-                "academic_year": "2024-2025", 
+                "academic_year": f"{year}-{year+1}" if 1900 <= year <= 2099 else "N/A",
                 "department": "CSE"
             }
             if source == "scholar":

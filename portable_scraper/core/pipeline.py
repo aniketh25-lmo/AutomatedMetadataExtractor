@@ -7,7 +7,7 @@ def run_processing_pipeline(source: str, payload: dict):
     The central conveyor belt. Takes raw scraper payload, pushes to staging tables,
     links to Golden Records, and refines the final output.
     """
-    if not payload or not payload.get("papers"):
+    if not payload or not payload.get("profile"):
         print("❌ Pipeline Aborted: No valid payload provided.")
         return False
 

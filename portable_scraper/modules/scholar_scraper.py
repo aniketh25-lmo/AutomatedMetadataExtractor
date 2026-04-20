@@ -85,10 +85,23 @@ def run_scholar_scraper(first_name, last_name, affiliation="", output_dir=""):
         time.sleep(TIMEOUTS["INITIAL_SEARCH_WAIT"])
         
         try:
-            profile_link = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "h3")))
-            profile_link.click()
+            # Priority 1: Look for a direct Google Scholar profile URL in search results
+            scholar_links = driver.find_elements(By.XPATH, "//a[contains(@href, 'scholar.google.com/citations?user=')]")
+            if scholar_links:
+                scholar_links[0].click()
+            else:
+                # Priority 2: Fall back to first h3 (original behaviour)
+                profile_link = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "h3")))
+                profile_link.click()
         except Exception:
-            print("❌ Profile not found.")
+            print(f"\u274c No Google Scholar profile found for '{first_name} {last_name}'. Search returned no clickable results.")
+            return None, None
+
+        # Verify we actually landed on a Scholar profile page
+        time.sleep(3)
+        if "scholar.google.com/citations?user=" not in driver.current_url:
+            print(f"\u274c Navigation did not reach a Scholar profile page for '{first_name} {last_name}'.")
+            print(f"   Current URL: {driver.current_url}")
             return None, None
 
         main_window = driver.current_window_handle
@@ -97,6 +110,7 @@ def run_scholar_scraper(first_name, last_name, affiliation="", output_dir=""):
         # --- PHASE 2: EXPANSION ---
         print("⏬ PHASE 2: Expanding publications...")
         prev_count = 0
+        rows = []  # initialise so len(rows) is safe if loop never runs
         while True:
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(1)
@@ -115,17 +129,34 @@ def run_scholar_scraper(first_name, last_name, affiliation="", output_dir=""):
         print(f"   ✅ Total {len(rows)} papers visible.")
 
         # --- PHASE 3: HEADER ---
+        # Guard: ensure Scholar_ID is extractable before building the profile dict
+        scholar_id_match = re.search(r'user=([^&]+)', driver.current_url)
+        if not scholar_id_match:
+            print(f"\u274c Could not extract Scholar ID from URL. This may not be a valid profile page.")
+            print(f"   URL: {driver.current_url}")
+            return None, None
+
+        try:
+            name_text = driver.find_element(By.ID, "gsc_prf_in").text
+        except Exception:
+            name_text = f"{first_name} {last_name}"
+
+        try:
+            org_text = driver.find_element(By.CLASS_NAME, "gsc_prf_il").text
+        except Exception:
+            org_text = ""
+
         profile = {
-            "Name": driver.find_element(By.ID, "gsc_prf_in").text,
-            "Organization": driver.find_element(By.CLASS_NAME, "gsc_prf_il").text,
-            "Scholar_ID": re.search(r'user=([^&]+)', driver.current_url).group(1),
+            "Name": name_text,
+            "Organization": org_text,
+            "Scholar_ID": scholar_id_match.group(1),
             "URL": driver.current_url
         }
         stats = driver.find_elements(By.CSS_SELECTOR, "td.gsc_rsb_std")
         profile.update({
-            "Citations": stats[0].text if stats else "0", 
-            "H-Index": stats[2].text if len(stats)>2 else "0", 
-            "i10-Index": stats[4].text if len(stats)>4 else "0"
+            "Citations": stats[0].text if stats else "0",
+            "H-Index": stats[2].text if len(stats) > 2 else "0",
+            "i10-Index": stats[4].text if len(stats) > 4 else "0"
         })
 
         # --- PHASE 4: MULTI-TAB EXHAUSTIVE SCRAPE ---
@@ -202,25 +233,25 @@ def run_scholar_scraper(first_name, last_name, affiliation="", output_dir=""):
 
         print(f"   ✅ Extraction Complete. Processed {len(papers)} papers.")
 
-        # 🟢 PHASE 5: Generating Dual Excels & Preparing Payload
+        # 🟢 PHASE 5: Generating Excels & Preparing Payload
         print("💾 PHASE 5: Generating Excel Backups...")
+        os.makedirs(output_dir, exist_ok=True)
+        clean_name = f"{last_name}_{first_name[0]}"
+
+        profile_path = os.path.join(output_dir, f"Scholar_{clean_name}_Profile.xlsx")
+        pd.DataFrame([profile]).to_excel(profile_path, index=False)
+        print(f"   📊 Saved Profile to: {profile_path}")
+
+        payload = {"profile": profile, "papers": papers}
+
         if papers:
-            os.makedirs(output_dir, exist_ok=True)
-            # Standardized naming for Scholar
-            clean_name = f"{last_name}_{first_name[0]}" # Matches Scholar_V_Baby style
-            
-            profile_path = os.path.join(output_dir, f"Scholar_{clean_name}_Profile.xlsx")
             papers_path = os.path.join(output_dir, f"Scholar_{clean_name}_Exhaustive.xlsx")
-            
-            # Save both for a full local audit trail
-            pd.DataFrame([profile]).to_excel(profile_path, index=False)
             pd.DataFrame(papers).to_excel(papers_path, index=False)
-            
-            print(f"   📊 Saved Profile to: {profile_path}")
             print(f"   📊 Saved Publications to: {papers_path}")
-            
-            payload = {"profile": profile, "papers": papers}
             return papers_path, payload
+        else:
+            print("   ⚠️ No publications found for this author, but profile data has been saved.")
+            return profile_path, payload
 
 
     except Exception as outer_e:
