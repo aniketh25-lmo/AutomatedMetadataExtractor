@@ -43,14 +43,15 @@ def sound_alarm():
 def check_for_captcha(driver):
     """Monitors for Google's security triggers."""
     try:
-        body_text = driver.page_source.lower()
+        body_text = driver.find_element(By.TAG_NAME, "body").text.lower()
         if any(msg in body_text for msg in ["not a robot", "suspicious activity", "unusual traffic"]):
             print("\n🚨 GOOGLE SECURITY TRIGGERED! 🚨")
             sound_alarm()
             print("   👉 ACTION REQUIRED: Solve the captcha in the browser window.")
             while True:
                 time.sleep(3)
-                if not any(msg in driver.page_source.lower() for msg in ["not a robot", "suspicious activity"]):
+                current_text = driver.find_element(By.TAG_NAME, "body").text.lower()
+                if not any(msg in current_text for msg in ["not a robot", "suspicious activity", "unusual traffic"]):
                     print("   ✅ Captcha cleared. Resuming pipeline...")
                     time.sleep(2)
                     break

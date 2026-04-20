@@ -197,45 +197,42 @@ def run_scopus_scraper(first_name: str, last_name: str, output_dir: str):
 
         check_for_captcha(driver)
 
-        # --- Pre-check: Verify search returned at least one author result ---
-        print("\n🔍 Verifying search results...")
-        try:
-            author_links_check = driver.find_elements(
-                By.CSS_SELECTOR, "a[data-testid='author-link'], a[href*='authorId=']"
-            )
-            page_body = driver.find_element(By.TAG_NAME, "body").text.lower()
-            no_results_indicators = [
-                "no results found", "no authors found",
-                "your search did not match", "0 results"
-            ]
-            if not author_links_check or any(ind in page_body for ind in no_results_indicators):
-                print(f"❌ No Scopus profile found for '{first_name} {last_name}'. The author search returned no results.")
-                return None, None
-        except Exception:
-            pass  # If the check itself fails, proceed and let the click attempt surface the real error
-
         print("\n🖱️ Selecting target Author Profile...")
         try:
-            # 🟢 GENERALIZED FUZZY MATCH: 
-            # We translate the entire link text to lowercase and check for BOTH 
-            # the first and last name components anywhere in that string.
-            low_text = "translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')"
             f_low = first_name.lower().strip()
             l_low = last_name.lower().strip()
             
-            # This XPath translates to: "Find a link that contains both name parts"
-            author_xpath = f"//a[contains({low_text}, '{l_low}') and contains({low_text}, '{f_low}')]"
+            # Remove quotes to prevent breaking the raw XPath string
+            f_safe = f_low.replace("'", "").replace('"', '')
+            l_safe = l_low.replace("'", "").replace('"', '')
+
+            # Semantic XPath: Wait for ANY anchor tag whose human-readable text contains either the first or last name.
+            # This makes the scanner 100% immune to random Scopus CSS or URL structure updates.
+            xpath_query = f"//a[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '{l_safe}') or contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '{f_safe}')]"
             
-            try:
-                # 1. Primary: Intelligent Name Match (Handles "Last, First" or "First Last")
-                elem = wait.until(EC.element_to_be_clickable((By.XPATH, author_xpath)))
-                elem.click()
-            except:
-                # 2. Fallback: If names are abbreviated (e.g., "Vadlana, B."), 
-                # we grab the first author result based on Scopus's internal test ID.
-                print("   ℹ️ Fuzzy match failed. Falling back to primary result selector...")
-                elem = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[data-testid='author-link'], a[href*='authorId=']")))
-                elem.click()
+            author_links = wait.until(EC.presence_of_all_elements_located((By.XPATH, xpath_query)))
+            
+            clicked = False
+            for link in author_links:
+                link_text = link.text.lower()
+                if l_safe in link_text and f_safe in link_text:
+                    try:
+                        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", link)
+                        time.sleep(0.5)
+                        ActionChains(driver).move_to_element(link).click().perform()
+                    except:
+                        driver.execute_script("arguments[0].click();", link)
+                    clicked = True
+                    break
+            
+            if not clicked:
+                print("   ℹ️ Fuzzy match not exact. Falling back to primary result selector...")
+                try:
+                    driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", author_links[0])
+                    time.sleep(0.5)
+                    ActionChains(driver).move_to_element(author_links[0]).click().perform()
+                except:
+                    driver.execute_script("arguments[0].click();", author_links[0])
                 
         except Exception as e:
             print(f"❌ No Scopus profile found for '{first_name} {last_name}'. Could not locate a matching author entry.")
