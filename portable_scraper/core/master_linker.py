@@ -194,7 +194,7 @@ def run_targeted_linker(payload: dict, source: str):
                 updates["master_author_ids"] = current_ids
             if not match.get("doi") and doi: updates["doi"] = doi
             if not match.get("abstract") and abstract_txt: updates["abstract"] = abstract_txt
-            if not match.get("publication_year") and year: updates["publication_year"] = year
+            if year and (not match.get("publication_year") or match.get("publication_year") > 2099 or match.get("publication_year") < 1900): updates["publication_year"] = year
             if not match.get("source_name") and source_name: updates["source_name"] = source_name
             if not match.get("authors_list") and authors_list: updates["authors_list"] = authors_list
             if not match.get("volume_issue_pages") and vol_str: updates["volume_issue_pages"] = vol_str
